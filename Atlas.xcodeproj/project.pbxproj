@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A3B168A1D2EAFA000EEEA1A /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3B16891D2EAFA000EEEA1A /* Address.swift */; };
+		1A3B168C1D2EB05100EEEA1A /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3B168B1D2EB05100EEEA1A /* Photo.swift */; };
+		1A3B168E1D2EB0B800EEEA1A /* FloorPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3B168D1D2EB0B800EEEA1A /* FloorPlan.swift */; };
 		1AF952661CABF52A00D44B05 /* Atlas.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AF952651CABF52A00D44B05 /* Atlas.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1AF9526D1CABF52A00D44B05 /* Atlas.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AF952621CABF52A00D44B05 /* Atlas.framework */; };
 		1AF952721CABF52A00D44B05 /* AtlasJSONDictionaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF952711CABF52A00D44B05 /* AtlasJSONDictionaryTests.swift */; };
@@ -50,6 +53,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A3B16891D2EAFA000EEEA1A /* Address.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
+		1A3B168B1D2EB05100EEEA1A /* Photo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
+		1A3B168D1D2EB0B800EEEA1A /* FloorPlan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FloorPlan.swift; sourceTree = "<group>"; };
 		1AF952621CABF52A00D44B05 /* Atlas.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Atlas.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1AF952651CABF52A00D44B05 /* Atlas.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Atlas.h; sourceTree = "<group>"; };
 		1AF952671CABF52A00D44B05 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -182,6 +188,9 @@
 			isa = PBXGroup;
 			children = (
 				1AF9528D1CAC152B00D44B05 /* User.swift */,
+				1A3B16891D2EAFA000EEEA1A /* Address.swift */,
+				1A3B168B1D2EB05100EEEA1A /* Photo.swift */,
+				1A3B168D1D2EB0B800EEEA1A /* FloorPlan.swift */,
 			);
 			path = TestModels;
 			sourceTree = "<group>";
@@ -390,10 +399,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A3B168C1D2EB05100EEEA1A /* Photo.swift in Sources */,
 				1AF952721CABF52A00D44B05 /* AtlasJSONDictionaryTests.swift in Sources */,
 				1AF952901CAC1D6400D44B05 /* AtlasJSONArrayTests.swift in Sources */,
 				1AF9528A1CAC103800D44B05 /* TestJSON.swift in Sources */,
 				1AF9528E1CAC152B00D44B05 /* User.swift in Sources */,
+				1A3B168E1D2EB0B800EEEA1A /* FloorPlan.swift in Sources */,
+				1A3B168A1D2EAFA000EEEA1A /* Address.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -664,6 +676,7 @@
 				1AF952781CABF52A00D44B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1AF952791CABF52A00D44B05 /* Build configuration list for PBXNativeTarget "AtlasTests" */ = {
 			isa = XCConfigurationList;
@@ -672,6 +685,7 @@
 				1AF9527B1CABF52A00D44B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1AF952A71CAC446B00D44B05 /* Build configuration list for PBXNativeTarget "AtlasTV" */ = {
 			isa = XCConfigurationList;
@@ -680,6 +694,7 @@
 				1AF952A91CAC446B00D44B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1AF952AA1CAC446B00D44B05 /* Build configuration list for PBXNativeTarget "AtlasTVTests" */ = {
 			isa = XCConfigurationList;
@@ -688,6 +703,7 @@
 				1AF952AC1CAC446B00D44B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

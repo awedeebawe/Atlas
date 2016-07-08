@@ -23,6 +23,9 @@ struct User {
     let avatarURL: String?
     let isActive: Bool
     let memberSince: NSDate?
+    let address: Address?
+    let photos: [Photo]?
+    let floorPlans: []
     
 }
 
