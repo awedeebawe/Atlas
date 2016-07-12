@@ -29,10 +29,10 @@ public protocol AtlasMap {
      u
      converts model to JSON
      
-     - Returns: Dictionary with String key and AnyObject Value
+     - Returns: AnyObject since valid JSON can be either an `Array<AnyObject>` or `Dictionary<String, AnyObject>`
      
      */
-    func toJSON() -> [String: AnyObject]?
+    func toJSON() -> JSON?
     
     /**
      

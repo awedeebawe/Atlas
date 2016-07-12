@@ -17,7 +17,7 @@ import Foundation
 struct FloorPlan {
     
     let name: String?
-    let photo: Photo?
+    let photos: [Photo]?
     let sqft: Int?
     let beds: Int?
     let baths: Int?
@@ -26,15 +26,18 @@ struct FloorPlan {
 
 extension FloorPlan: AtlasMap {
     
-    func toJSON() -> [String : AnyObject]? {
+    func toJSON() -> JSON? {
         return nil
     }
     
     init?(json: JSON) throws {
         do {
             let map = try Atlas(json)
-            name = try map.key("name").to(String)
-            photo = try map.key("photo").to(Photo)
+            name = try map.mapKey("name")
+            photos = try map.mapArrayFromKey("photos")
+            sqft = try map.mapKey("sqft")
+            beds = try map.mapKey("beds")
+            baths = try map.mapKey("baths")
         } catch let e {
             throw e
         }

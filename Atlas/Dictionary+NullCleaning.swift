@@ -34,8 +34,8 @@ public extension Dictionary {
         let o = filter({ $0.1 != nil && !($0.1 is NSNull) })
         for val in o {
             switch val.1 {
-            case let _val as [String: AnyObject]:
-                cleanedDict[val.0] = _val.cleaned() as? Value
+            case is [String: AnyObject]:
+                cleanedDict[val.0] = (val.1 as? [String: AnyObject])?.cleaned() as? Value
             default:
                 cleanedDict[val.0] = val.1
             }

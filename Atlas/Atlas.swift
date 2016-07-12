@@ -40,7 +40,7 @@ public class Atlas {
         case let o as [String: AnyObject]:
             _json = o.cleaned()
         case let a as [AnyObject]:
-            _json = a.filter { $0 != nil && !($0 is NSNull) }
+            _json = a
         default:
             // Any individual object, String, Int, Bool, etc...
             _json = json
@@ -58,10 +58,77 @@ public class Atlas {
      - Returns: RPMapper object for a fluent interface
      
      */
-    public func key(key: String) -> Self {
+    public func mapKey(key: String) throws -> Self {
         _keyIsOptional = false
         _key = key
         return self
+    }
+
+    
+    public func mapKey<T: AtlasMap>(key: String) throws -> T? {
+        _keyIsOptional = false
+        _key = key
+        do {
+            return try to()
+        } catch {
+            throw error
+        }
+    }
+    
+    public func mapOptionalKey(key: String) throws -> Self {
+        _keyIsOptional = true
+        _key = key
+        return self
+    }
+    
+    public func mapOptionalKey<T: AtlasMap>(key: String) throws -> T? {
+        _keyIsOptional = true
+        _key = key
+        do {
+            return try to()
+        } catch {
+            throw error
+        }
+    }
+    
+    public func map<T: AtlasMap>() throws -> T? {
+        _keyIsOptional = false
+        _key = nil
+        do {
+            return try to()
+        } catch {
+            throw error
+        }
+    }
+    
+    public func mapArrayFromKey<T: AtlasMap>(key: String) throws -> [T]? {
+        _keyIsOptional = false
+        _key = key
+        do {
+            return try toArrayOf()
+        } catch {
+            throw error
+        }
+    }
+    
+    public func mapArrayFromOptionalKey<T: AtlasMap>(key: String) throws -> [T]? {
+        _keyIsOptional = true
+        _key = key
+        do {
+            return try toArrayOf()
+        } catch {
+            throw error
+        }
+    }
+    
+    public func mapArray<T: AtlasMap>() throws -> [T]? {
+        _keyIsOptional = false
+        _key = nil
+        do {
+            return try toArrayOf()
+        } catch {
+            throw error
+        }
     }
     
     /**
@@ -73,11 +140,15 @@ public class Atlas {
      - Returns: RPMapper object for a fluent interface
      
      */
-    public func optionalKey(key: String) -> Self {
-        _keyIsOptional = true
-        _key = key
-        return self
-    }
+//    public func fromOptionalKey<T>(key: String) throws -> T? {
+//        _keyIsOptional = true
+//        _key = key
+//        do {
+//            return try to()
+//        } catch {
+//            throw error
+//        }
+//    }
     
     /**
     
@@ -90,18 +161,18 @@ public class Atlas {
      - Returns: An Optional `T`
      
      */
-    public func forceTo<T>(type: T.Type) throws -> T? {
-        _forceTo = true
-        let result: T?
-        do {
-             result = try to(type)
-        } catch {
-            throw error
-        }
-        
-        _forceTo = false
-        return result
-    }
+//    public func forceTo<T>() throws -> T? {
+//        _forceTo = true
+//        let result: T?
+//        do {
+//             result = try to()
+//        } catch {
+//            throw error
+//        }
+//        
+//        _forceTo = false
+//        return result
+//    }
     
     /**
      
@@ -114,10 +185,9 @@ public class Atlas {
      - Returns: An Optional `T`
      
      */
-    public func to<T>(type: T.Type) throws -> T? {
-        let _val: AnyObject
-        switch _json {
-        case is [String: AnyObject]:
+    private func to<T: AtlasMap>() throws -> T? {
+//        switch _json {
+//        case is [String: AnyObject]:
             var jsonObject: JSON? = _json
             
             if let __key = _key {
@@ -126,7 +196,7 @@ public class Atlas {
                 }
                 
                 if jsonObject == nil && !_keyIsOptional {
-                    throw MappingError.KeyNotInJSONError("Mapping to \(type) failed. \(__key) is not in the JSON object provided.")
+                    throw MappingError.KeyNotInJSONError("Mapping to \(T.self) failed. \(__key) is not in the JSON object provided.")
                 }
             }
             
@@ -138,17 +208,16 @@ public class Atlas {
                 }
             }
 
-            _val = unwrappedVal
-        default:
-            _val = _json
+//            _val = unwrappedVal
+//        default:
+//            _val = _json
+//        }
+        
+        guard let mappedObject = try T.init(json: unwrappedVal) else {
+            throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(jsonObject) to type \(T.self)")
         }
         
-        do {
-            let val = try map(_val, to: type)
-            return val
-        } catch let e as MappingError {
-            throw e
-        }
+        return mappedObject
     }
     
     /**
@@ -162,20 +231,20 @@ public class Atlas {
      - Returns: An Optional array of `T`
      
      */
-    public func toArrayOf<T>(type: T.Type) throws -> [T]? {
+    private func toArrayOf<T: AtlasMap>() throws -> [T]? {
         var jsonArray: JSON? = _json
-        
+
         if let __key = _key {
-            if let _jsonArray = _json[__key] as? [AnyObject] {
+            if let _jsonArray = _json[__key] {
                 jsonArray = _jsonArray
             }
             
             if jsonArray == nil && !_keyIsOptional {
-                throw MappingError.KeyNotInJSONError("While trying to map the value of \(__key) in the provided JSON to type \(type), we found that the key is not isn the JSON object provided.")
+                throw MappingError.KeyNotInJSONError("While trying to map the value of \(__key) in the provided JSON to type \(T.self), we found that the key is not isn the JSON object provided.")
             }
         }
-        
-        guard let unwrappedArray = jsonArray as? [AnyObject] else {
+
+        guard let unwrappedArray = jsonArray else {
             if _keyIsOptional {
                 return nil
             } else {
@@ -183,12 +252,16 @@ public class Atlas {
             }
         }
 
-        do {
-            let array = try unwrappedArray.filter { $0 != nil && !($0 is NSNull) }.map { try map($0, to: type)! }
-            return array
-        } catch let e as MappingError {
-            throw e
+        var array = [T]()
+        for obj in Array(arrayLiteral: unwrappedArray) {
+            guard let mappedObj: T = try T.init(json: obj) else {
+                throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(jsonArray) to type \(T.self)")
+            }
+            
+            array.append(mappedObj)
         }
+        
+        return array
     }
     
     /**
@@ -200,10 +273,10 @@ public class Atlas {
      - Returns: An Optional NSDate
      
      */
-    public func toRFC3339Date() throws -> NSDate? {
-        
-        return try toDate("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
-    }
+//    public func toRFC3339Date() throws -> NSDate? {
+//        
+//        return try toDate("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
+//    }
     
     /**
      
@@ -216,123 +289,117 @@ public class Atlas {
      - Returns: An Optional NSDate
      
      */
-    public func toDate(format: String) throws -> NSDate? {
-        guard let key = _key else {
-            if _keyIsOptional {
-                return nil
-            } else {
-                throw MappingError.NoKeyError
-            }
-        }
+//    public func toDate(format: String) throws -> NSDate? {
+//        guard let key = _key else {
+//            if _keyIsOptional {
+//                return nil
+//            } else {
+//                throw MappingError.NoKeyError
+//            }
+//        }
+//        
+//        guard let _val = _json[key] as? String where !_val.isEmpty else {
+//
+//            if _keyIsOptional {
+//                return nil
+//            } else {
+//                throw MappingError.NotMappable("The value of key \(key) in the provided JSON object isn't a String and therefore cannot be mapped to an NSDate.")
+//            }
+//        }
+//        
+//        if let _date = NSDate.dateFromString(_val, withFormat: format) {
+//            return _date
+//        } else {
+//            throw MappingError.NotMappable("The date string \(_val) of key \(key) in the provided JSON object does not match the format \(format)")
+//        }
+//    }
+    
+//    private func performMapping<T: AtlasMap>() -> T? {
+//        let retVal: T?
+//        do {
+//            retVal = try T.init(json: _val!)
+//        } catch {
+//            return nil
+//        }
+    
+//        switch T.self {
+//        case is AtlasMap.Type:
+//            do {
+//                retVal = try (T.self as! AtlasMap.Type).init(json: _val!) as? T
+//            } catch let e {
+//                throw e
+//            }
+//        default:
+//            guard let val = _val as? T else {
+//                throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(_val) to type \(T.self)")
+//            }
+//            retVal = val
+////            throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(_val) to type \(T.self)")
+//        }
         
-        guard let _val = _json[key] as? String where !_val.isEmpty else {
+//        _key = nil
+//        _val = nil
+//        return retVal
+//    }
+    
+}
 
-            if _keyIsOptional {
-                return nil
-            } else {
-                throw MappingError.NotMappable("The value of key \(key) in the provided JSON object isn't a String and therefore cannot be mapped to an NSDate.")
-            }
-        }
-        
-        if let _date = NSDate.dateFromString(_val, withFormat: format) {
-            return _date
-        } else {
-            throw MappingError.NotMappable("The date string \(_val) of key \(key) in the provided JSON object does not match the format \(format)")
-        }
+extension String: AtlasMap {
+    
+    public func toJSON() -> JSON? {
+        return nil
     }
     
-    func map<T>(val: AnyObject, to: T.Type) throws -> T? {
-        let retVal: T?
-        
-        switch to {
-        case is String.Type:
-            if _forceTo {
-                retVal = "\(val)" as? T
-            } else {
-                guard let _val = val as? String else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = "\(_val)" as? T
-            }
-        case is Int.Type:
-            if _forceTo {
-                retVal = Int(val.intValue) as? T
-            } else {
-                guard let _val = val as? Int else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Int16.Type:
-            if _forceTo {
-                retVal = Int16(val.intValue) as? T
-            } else {
-                guard let _val = val as? Int16 else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Int32.Type:
-            if _forceTo {
-                retVal = Int32(val.longValue) as? T
-            } else {
-                guard let _val = val as? Int32 else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Int64.Type:
-            if _forceTo {
-                retVal = Int64(val.longLongValue) as? T
-            } else {
-                guard let _val = val as? Int64 else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Float.Type:
-            if _forceTo {
-                retVal = Float(val.floatValue) as? T
-            } else {
-                guard let _val = val as? Float else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Double.Type:
-            if _forceTo {
-                retVal = Double(val.doubleValue) as? T
-            } else {
-                guard let _val = val as? Double else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is Bool.Type:
-            if _forceTo {
-                retVal = val.boolValue as? T
-            } else {
-                guard let _val = val as? Bool else {
-                    throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-                }
-                retVal = _val as? T
-            }
-        case is AtlasMap.Type:
-            if let _to = (to as? AtlasMap.Type) {
-                do {
-                    retVal = try _to.init(json: val) as? T
-                } catch let e {
-                    throw e
-                }
-            } else {
-                throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-            }
-        default:
-            throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(val) to type \(to)")
-        }
-        
-        _key = nil
-        return retVal
+    public init?(json: JSON) {
+        self = String(json)
+    }
+    
+}
+
+extension Int: AtlasMap {
+    
+    public func toJSON() -> JSON? {
+        return nil
+    }
+    
+    public init?(json: JSON) {
+        self = Int("\(json)")!
+    }
+    
+}
+
+extension Double: AtlasMap {
+    
+    public func toJSON() -> JSON? {
+        return nil
+    }
+    
+    public init?(json: JSON) {
+        self = Double("\(json)")!
+    }
+    
+}
+
+extension Float: AtlasMap {
+    
+    public func toJSON() -> JSON? {
+        return nil
+    }
+    
+    public init?(json: JSON) {
+        self = Float("\(json)")!
+    }
+    
+}
+
+extension Bool: AtlasMap {
+    
+    public func toJSON() -> JSON? {
+        return nil
+    }
+    
+    public init?(json: JSON) {
+        self = json as! Bool
     }
     
 }

@@ -20,8 +20,6 @@
 * SOFTWARE.
 */
 
-import Foundation
-
 public extension NSDate {
     
     private struct Static {

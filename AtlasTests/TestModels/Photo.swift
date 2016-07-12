@@ -23,15 +23,15 @@ struct Photo {
 
 extension Photo: AtlasMap {
     
-    func toJSON() -> [String : AnyObject]? {
+    func toJSON() -> JSON? {
         return nil
     }
     
     init?(json: JSON) throws {
         do {
             let map = try Atlas(json)
-            abstract = try map.key("abstract").to(String)
-            urlString = try map.key("url").to(String)
+            abstract = try map.mapKey("abstract")
+            urlString = try map.mapKey("url")
         } catch let e {
             throw e
         }
