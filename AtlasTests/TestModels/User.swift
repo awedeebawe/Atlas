@@ -86,8 +86,7 @@ extension UserNoKey: AtlasMap {
             phone = try map.mapKey("phone")
             avatarURL = try map.mapKey("avatar")
             isActive = try map.mapKey("is_active")!
-            memberSince = nil
-//            memberSince = try map.mapKey("member_since").toRFC3339Date()
+            memberSince = try map.mapKey("member_since").toRFC3339Date()
         } catch let e {
             throw e
         }
