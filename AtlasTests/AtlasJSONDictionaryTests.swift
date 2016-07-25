@@ -56,7 +56,8 @@ class AtlasJSONDictionaryTests: XCTestCase {
         XCTAssert(message == "Mapping to Int failed. phone is not in the JSON object provided.", "Error handling didn't return the proper error message")
     }
     
-    func testNotMappableErrorHandling() {
+    // Disabled due to massive changes within Atlas that make it no longer able to return an error if the type doesn't match. Instead, an error will only be thrown if a mapping fails, not if a type in the JSON doesn't match the type being mapped to.
+    func DISABLED_testNotMappableErrorHandling() {
         var message: String?
         var user: User?
         do {
@@ -75,7 +76,7 @@ class AtlasJSONDictionaryTests: XCTestCase {
         }
         
         XCTAssert(user == nil, "Received a valid User instance even though the expectation was that JSON parsing would fail")
-        XCTAssert(message == "User.phone - Unable to map 2223334444 to type Int", "Error handling didn't return the proper error message")
+        XCTAssert(message == "User.phone - Unable to map 2223334444 to type Int", "Error handling didn't return the proper error message. Received: \(message)")
     }
     
     func testNoMappingKeyProvidedInModelErrorHandling() {
@@ -85,7 +86,7 @@ class AtlasJSONDictionaryTests: XCTestCase {
             user = try Atlas(TestJSON.user).map()
         } catch let e as MappingError {
             switch e {
-            case let .NotMappable(_message):
+            case let .KeyNotInJSONError(_message):
                 message = "User\(_message)"
             default:
                 XCTFail("Unexpected Mapping error occurred: \(e)")
@@ -97,7 +98,7 @@ class AtlasJSONDictionaryTests: XCTestCase {
         }
         
         XCTAssert(user == nil, "Received a valid User instance even though the expectation was that JSON parsing would fail")
-        XCTAssert(message != nil, "Error handling didn't return the proper error message")
+        XCTAssert(message != "Mapping to String failed. foo is not in the JSON object provided.", "Error handling didn't return the proper error message")
     }
     
     func testPerformanceExample() {

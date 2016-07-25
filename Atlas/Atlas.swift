@@ -22,25 +22,26 @@
 
 public class Atlas {
     
-    private var _json: JSON
+    private var _json: JSON?
+    private var _jsonArray: [JSON]?
+    private var _jsonObject: [String: JSON]?
     private var _key: String?
     private var _keyIsOptional = false
     private var _forceTo = false
     
     /**
      
-     convenient initializer that accepts JSON string
+     Designated initializer that accepts JSON
      
-     - Parameters json: JSON String
+     - Parameters json: JSON
      
      */
-    
-    public init(_ json: JSON) throws {
+    required public init(_ json: JSON) throws {
         switch json {
         case let o as [String: AnyObject]:
-            _json = o.cleaned()
+            _jsonObject = o.cleaned()
         case let a as [AnyObject]:
-            _json = a
+            _jsonArray = a
         default:
             // Any individual object, String, Int, Bool, etc...
             _json = json
@@ -188,16 +189,18 @@ public class Atlas {
     private func to<T: AtlasMap>() throws -> T? {
 //        switch _json {
 //        case is [String: AnyObject]:
-            var jsonObject: JSON? = _json
+            var jsonObject: JSON?
             
             if let __key = _key {
-                if let _jsonObject = _json[__key] {
+                if let _jsonObject = _jsonObject?[__key] {
                     jsonObject = _jsonObject
                 }
                 
                 if jsonObject == nil && !_keyIsOptional {
                     throw MappingError.KeyNotInJSONError("Mapping to \(T.self) failed. \(__key) is not in the JSON object provided.")
                 }
+            } else {
+                jsonObject = _jsonObject
             }
             
             guard let unwrappedVal = jsonObject else {
@@ -232,11 +235,11 @@ public class Atlas {
      
      */
     private func toArrayOf<T: AtlasMap>() throws -> [T]? {
-        var jsonArray: JSON? = _json
+        var jsonArray: [JSON]? = _jsonArray
 
         if let __key = _key {
-            if let _jsonArray = _json[__key] {
-                jsonArray = _jsonArray
+            if let _jsonArray = _jsonObject?[__key] {
+                jsonArray = _jsonArray as? [JSON]
             }
             
             if jsonArray == nil && !_keyIsOptional {
@@ -253,7 +256,7 @@ public class Atlas {
         }
 
         var array = [T]()
-        for obj in Array(arrayLiteral: unwrappedArray) {
+        for obj in unwrappedArray {
             guard let mappedObj: T = try T.init(json: obj) else {
                 throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(jsonArray) to type \(T.self)")
             }
@@ -268,15 +271,15 @@ public class Atlas {
      
      Map a RFC3339 date from JSON to Model field
      
-     - Throws: If `Key` method was not used an `MappingError` may be thrown, also a `MappingError` will be thrown if the value is not a string type
+     - Throws: If `Key` method was not used a `MappingError` may be thrown, also a `MappingError` will be thrown if the value is not a string type
      
      - Returns: An Optional NSDate
      
      */
-//    public func toRFC3339Date() throws -> NSDate? {
-//        
-//        return try toDate("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
-//    }
+    public func toRFC3339Date() throws -> NSDate? {
+        
+        return try toDate("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
+    }
     
     /**
      
@@ -289,58 +292,30 @@ public class Atlas {
      - Returns: An Optional NSDate
      
      */
-//    public func toDate(format: String) throws -> NSDate? {
-//        guard let key = _key else {
-//            if _keyIsOptional {
-//                return nil
-//            } else {
-//                throw MappingError.NoKeyError
-//            }
-//        }
-//        
-//        guard let _val = _json[key] as? String where !_val.isEmpty else {
-//
-//            if _keyIsOptional {
-//                return nil
-//            } else {
-//                throw MappingError.NotMappable("The value of key \(key) in the provided JSON object isn't a String and therefore cannot be mapped to an NSDate.")
-//            }
-//        }
-//        
-//        if let _date = NSDate.dateFromString(_val, withFormat: format) {
-//            return _date
-//        } else {
-//            throw MappingError.NotMappable("The date string \(_val) of key \(key) in the provided JSON object does not match the format \(format)")
-//        }
-//    }
-    
-//    private func performMapping<T: AtlasMap>() -> T? {
-//        let retVal: T?
-//        do {
-//            retVal = try T.init(json: _val!)
-//        } catch {
-//            return nil
-//        }
-    
-//        switch T.self {
-//        case is AtlasMap.Type:
-//            do {
-//                retVal = try (T.self as! AtlasMap.Type).init(json: _val!) as? T
-//            } catch let e {
-//                throw e
-//            }
-//        default:
-//            guard let val = _val as? T else {
-//                throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(_val) to type \(T.self)")
-//            }
-//            retVal = val
-////            throw MappingError.NotMappable(".\(_key ?? "NoKey") - Unable to map \(_val) to type \(T.self)")
-//        }
+    public func toDate(format: String) throws -> NSDate? {
+        guard let key = _key else {
+            if _keyIsOptional {
+                return nil
+            } else {
+                throw MappingError.NoKeyError
+            }
+        }
         
-//        _key = nil
-//        _val = nil
-//        return retVal
-//    }
+        guard let _val = _jsonObject?[key] as? String where !_val.isEmpty else {
+
+            if _keyIsOptional {
+                return nil
+            } else {
+                throw MappingError.NotMappable("The value of key \(key) in the provided JSON object isn't a String and therefore cannot be mapped to an NSDate.")
+            }
+        }
+        
+        guard let date = NSDate.dateFromString(_val, withFormat: format) else {
+            throw MappingError.NotMappable("The date string \(_val) of key \(key) in the provided JSON object does not match the format \(format)")
+        }
+        
+        return date
+    }
     
 }
 
@@ -403,3 +378,4 @@ extension Bool: AtlasMap {
     }
     
 }
+
