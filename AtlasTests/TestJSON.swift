@@ -54,9 +54,32 @@ struct TestJSON {
         "first_name": "John",
         "last_name": "Appleseed",
         "email": "john@test.com",
-        // "phone": 2223334444, Removed for test
+/*>>>   "phone": 2223334444, Removed for test */
         "avatar": "https://www.somedomain.com/users/images/asdfa43weefew4ee.jpg",
         "is_active": true,
+        "member_since": "2016-01-30T09:19:52.000",
+        "address": [
+            "number": 123,
+            "street": "Main St",
+            "city": "Atlanta",
+            "state": "GA",
+            "zip": "12345"
+        ],
+        "floorplans": [
+            fplan
+        ],
+        "photos": [
+            photo
+        ]
+    ]
+    
+    static let userInvalidValueKey: [String: AnyObject] = [
+        "first_name": "John",
+        "last_name": "Appleseed",
+        "email": "john@test.com",
+        "phone": 2223334444,
+        "avatar": "https://www.somedomain.com/users/images/asdfa43weefew4ee.jpg",
+/*>>>*/ "is_active": "true", // Change to "true" for a test
         "member_since": "2016-01-30T09:19:52.000",
         "address": [
             "number": 123,

@@ -34,6 +34,28 @@ class AtlasJSONDictionaryTests: XCTestCase {
         XCTAssertTrue(user.memberSince == date)
     }
     
+    func testInvalidValueErrorHandling() {
+        var message: String?
+        var user: User?
+        do {
+            user = try Atlas(TestJSON.userInvalidValueKey).map()
+        } catch let e as MappingError {
+            switch e {
+            case let .NotMappable(_message):
+                message = _message
+            default:
+                XCTFail("Unexpected Mapping error occurred: \(e)")
+                return
+            }
+        } catch let e as NSError {
+            XCTFail("Unexpected error occurred: \(e)")
+            return
+        }
+        
+        XCTAssert(user == nil, "Received a valid User instance even though the expectation was that JSON parsing would fail")
+        XCTAssert(message == ".is_active - Unable to map Optional(true) to type Bool")
+    }
+    
     func testKeyNotInJSONErrorHandling() {
         var message: String?
         var user: User?
