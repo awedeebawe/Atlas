@@ -57,11 +57,9 @@ public class Atlas {
     }
     
     /**
-     
      Designated initializer that accepts JSON
      
-     - Parameters json: JSON
-     
+     - Parameter json: A JSON object/array. Use NSJSONSerialization to get the JSON object/array from NSData and then pass the value into Atlas.
      */
     required public init(_ json: JSON, executor: AtlasMapExector? = nil) throws {
         _executor = executor ?? AtlasMappingExecutor()
@@ -75,49 +73,9 @@ public class Atlas {
         }
     }
     
-    /**
-     
-     Accepts the key name you would like to map to model field
-     
-     - Parameters key: The string that represents the key in the JSON object.
-     
-     - Throws: Can throw a `MappingError` if `key` doesn't exist in `fromJSON`
-     
-     - Returns: RPMapper object for a fluent interface
-     
-     */
-    public func mapKey(key: String) throws -> Self {
-        _keyIsOptional = false
-        _key = key
-        return self
-    }
-
-    
-    public func mapKey<T: AtlasMap>(key: String) throws -> T? {
-        _keyIsOptional = false
-        _key = key
-        do {
-            return try _executor.executeObjectMapping()
-        } catch {
-            throw error
-        }
-    }
-    
-    public func mapOptionalKey(key: String) throws -> Self {
-        _keyIsOptional = true
-        _key = key
-        return self
-    }
-    
-    public func mapOptionalKey<T: AtlasMap>(key: String) throws -> T? {
-        _keyIsOptional = true
-        _key = key
-        do {
-            return try _executor.executeObjectMapping()
-        } catch {
-            throw error
-        }
-    }
+    /////////////////////////////////////////////////////
+    //MARK: Top level object mapping - key not required
+    /////////////////////////////////////////////////////
     
     public func map<T: AtlasMap>() throws -> T? {
         _keyIsOptional = false
@@ -129,11 +87,68 @@ public class Atlas {
         }
     }
     
+    public func mapArray<T: AtlasMap>() throws -> [T]? {
+        _keyIsOptional = false
+        _key = nil
+        do {
+            return try _executor.executeArrayMapping()
+        } catch {
+            throw error
+        }
+    }
+    
+    /////////////////////////////////////////////////////
+    //MARK: Required Sub-object mapping - key required
+    /////////////////////////////////////////////////////
+    
+    /**
+     Used to map the value of `key` to an instance of `T`
+     
+     - Parameter key: A string that represents the key in the JSON object.
+     
+     - Throws: Can throw a `MappingError` if `key` doesn't exist in the JSON
+     
+     - Returns: An instance of `T`
+     */
+    public func mapKey<T: AtlasMap>(key: String) throws -> T? {
+        _keyIsOptional = false
+        _key = key
+        do {
+            return try _executor.executeObjectMapping()
+        } catch {
+            throw error
+        }
+    }
+    
+    
     public func mapArrayFromKey<T: AtlasMap>(key: String) throws -> [T]? {
         _keyIsOptional = false
         _key = key
         do {
             return try _executor.executeArrayMapping()
+        } catch {
+            throw error
+        }
+    }
+    
+    /////////////////////////////////////////////////////
+    //MARK: Optional Sub-object mapping - key required
+    /////////////////////////////////////////////////////
+    
+    /**
+     Used to optionally map the value of `key` to an instance of `T`. If `key` doesn't exist in JSON, mapping execution will continue without an error being thrown.
+     
+     - Parameter key: A string that represents the key in the JSON object.
+     
+     - Throws: Can throw a `MappingError` if unable to mapp the value of `key` to type `T`
+     
+     - Returns: An instance of `T`
+     */
+    public func mapOptionalKey<T: AtlasMap>(key: String) throws -> T? {
+        _keyIsOptional = true
+        _key = key
+        do {
+            return try _executor.executeObjectMapping()
         } catch {
             throw error
         }
@@ -149,14 +164,5 @@ public class Atlas {
         }
     }
     
-    public func mapArray<T: AtlasMap>() throws -> [T]? {
-        _keyIsOptional = false
-        _key = nil
-        do {
-            return try _executor.executeArrayMapping()
-        } catch {
-            throw error
-        }
-    }
 }
 

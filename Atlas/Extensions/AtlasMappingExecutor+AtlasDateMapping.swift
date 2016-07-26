@@ -8,6 +8,18 @@
 
 extension AtlasMappingExecutor: AtlasDateMapping {
     
+    func mapKey(key: String) throws -> Self {
+        keyIsOptional = false
+        self.key = key
+        return self
+    }
+    
+    func mapOptionalKey(key: String) throws -> Self {
+        keyIsOptional = true
+        self.key = key
+        return self
+    }
+    
     /**
      
      Map a RFC3339 date from JSON to Model field
@@ -17,8 +29,8 @@ extension AtlasMappingExecutor: AtlasDateMapping {
      - Returns: An Optional NSDate
      
      */
-    func mapToRFC3339Date() throws -> NSDate? {
-        return try mapToDateWithFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
+    func toRFC3339Date() throws -> NSDate? {
+        return try toDateWithFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'")
     }
     
     /**
@@ -32,7 +44,7 @@ extension AtlasMappingExecutor: AtlasDateMapping {
      - Returns: An Optional NSDate
      
      */
-    func mapToDateWithFormat(format: String) throws -> NSDate? {
+    func toDateWithFormat(format: String) throws -> NSDate? {
         guard let key = key else {
             if keyIsOptional {
                 return nil
@@ -50,7 +62,7 @@ extension AtlasMappingExecutor: AtlasDateMapping {
             }
         }
         
-        guard let date = NSDate.dateFromString(_val, withFormat: format) else {
+        guard let date = NSDate.dateFromString(_val, withFormat: .Custom(format)) else {
             throw MappingError.NotMappable("The date string \(_val) of key \(key) in the provided JSON object does not match the format \(format)")
         }
         
